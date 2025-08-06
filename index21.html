@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Enviar plata</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Manrope', sans-serif;
+      background: #fff;
+      color: #200020;
+    }
+    .container {
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .input-group {
+      margin-top: 20px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      background: #fceffc;
+      font-size: 16px;
+      color: #000;
+    }
+    .fuente-box {
+      margin-top: 30px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+    }
+    .fuente-icon {
+      width: 40px;
+      height: 40px;
+      background: #da0081;
+      border-radius: 10px;
+      margin-right: 10px;
+    }
+    .fuente-label {
+      font-weight: 500;
+    }
+    .boton {
+      margin-top: 30px;
+      width: 100%;
+      padding: 16px;
+      background: #f49cd2;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    #animacion-carga {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      flex-direction: column;
+    }
+
+    .cuadro {
+      width: 60px;
+      height: 60px;
+      margin: 15px;
+      background: #da0081;
+      animation: rotar 1s infinite alternate;
+      border-radius: 12px;
+    }
+
+    .cuadro:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    @keyframes rotar {
+      0% { transform: scale(1) rotate(0deg); }
+      100% { transform: scale(1.2) rotate(45deg); }
+    }
+
+    #captura {
+      display: none;
+      position: relative;
+      max-width: 390px;
+      margin: 0 auto;
+    }
+    #captura img {
+      width: 100%;
+    }
+    .input-overlay {
+      position: absolute;
+      background: transparent;
+      border: none;
+      font-size: 15px;
+      color: #3C114B;
+      font-weight: 500;
+      font-family: 'Manrope', sans-serif;
+      pointer-events: none;
+    }
+    #nombre {
+      top: calc(354px * var(--escala));
+      left: calc((48px) * var(--escala));
+    }
+    #valor {
+      top: calc((418px) * var(--escala));
+      left: calc((48px) * var(--escala));
+    }
+    #fecha {
+      top: calc((480px) * var(--escala));
+      left: calc((48px) * var(--escala));
+    }
+    #referencia {
+      top: calc((540px) * var(--escala));
+      left: calc((48px) * var(--escala));
+    }
+    #disponible {
+      top: calc((606px) * var(--escala));
+      left: calc((50px) * var(--escala));
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Formulario inicial -->
+  <div class="container" id="formulario">
+    <h1>Envía plata QR</h1>
+    <div class="input-group">
+      <label for="valor">¿Cuánto?</label>
+      <input type="text" id="input-valor" placeholder="¿Cuánto?">
+    </div>
+    <div class="input-group">
+      <label for="nombre">Mensaje</label>
+      <input type="text" id="input-nombre" placeholder="Nombre del destinatario">
+    </div>
+    <div class="fuente-box">
+      <div class="fuente-icon"></div>
+      <div class="fuente-label">Disponible</div>
+    </div>
+    <button class="boton" id="sigue">Sigue</button>
+  </div>
+
+  <!-- Animación de carga estilo Nequi -->
+  <div id="animacion-carga">
+    <div class="cuadro"></div>
+    <div class="cuadro"></div>
+  </div>
+
+  <!-- Comprobante oculto inicialmente -->
+  <div id="captura">
+    <img src="comprobante_base.png" alt="Fondo">
+    <input type="text" id="nombre" class="input-overlay" readonly>
+    <input type="text" id="valor" class="input-overlay" readonly>
+    <div id="fecha" class="input-overlay"></div>
+    <input type="text" id="referencia" class="input-overlay" readonly>
+    <div id="disponible" class="input-overlay">Disponible</div>
+  </div>
+
+  <script>
+    const formulario = document.getElementById("formulario");
+    const captura = document.getElementById("captura");
+    const animacion = document.getElementById("animacion-carga");
+
+    document.getElementById("sigue").addEventListener("click", () => {
+      const nombre = document.getElementById("input-nombre").value.trim();
+      const valor = document.getElementById("input-valor").value.trim();
+      if (!nombre || !valor) {
+        alert("Por favor completa todos los campos.");
+        return;
+      }
+
+      const escala = Math.min(window.innerWidth / 390, 1);
+      captura.style.setProperty('--escala', escala);
+      document.getElementById('nombre').value = nombre;
+      document.getElementById('valor').value = formatValor(valor);
+      document.getElementById('referencia').value = 'M' + Math.floor(1e7 + Math.random() * 9e7);
+      generarFecha();
+
+      formulario.style.display = "none";
+      animacion.style.display = "flex";
+
+      setTimeout(() => {
+        animacion.style.display = "none";
+        captura.style.display = "block";
+        if (captura.requestFullscreen) {
+          captura.requestFullscreen();
+        } else if (captura.webkitRequestFullscreen) {
+          captura.webkitRequestFullscreen();
+        } else if (captura.msRequestFullscreen) {
+          captura.msRequestFullscreen();
+        }
+      }, 3000);
+    });
+
+    function generarFecha() {
+      const fecha = new Date();
+      const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+      const dia = fecha.getDate().toString().padStart(2,'0');
+      const mes = meses[fecha.getMonth()];
+      const anio = fecha.getFullYear();
+      let h = fecha.getHours(),
+          m = fecha.getMinutes().toString().padStart(2,'0'),
+          ampm = h >= 12 ? 'p. m.' : 'a. m.';
+      h = h % 12 || 12;
+      document.getElementById('fecha').innerHTML = `${dia} de ${mes} de ${anio} a las ${h}:${m} ${ampm}`;
+    }
+
+    function formatValor(valor) {
+      valor = valor.replace(/\D/g, '');
+      if (!valor) return "$ 0,00";
+      return `$ ${valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".")},00`;
+    }
+
+    // Deslizar para volver
+    let startY = 0;
+    document.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY;
+    });
+    document.addEventListener('touchmove', e => {
+      const deltaY = e.touches[0].clientY - startY;
+      if (deltaY > 80 && captura.style.display === 'block') {
+        captura.style.display = 'none';
+        formulario.style.display = 'block';
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
