@@ -6,250 +6,246 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: 'Manrope', sans-serif;
-      background: #fff;
-      color: #200020;
+    *{box-sizing:border-box}
+    html,body{margin:0;font-family:'Manrope',sans-serif;background:#fff;color:#200020;overscroll-behavior:none}
+
+    .container{padding:20px;max-width:400px;margin:0 auto}
+    h1{font-size:24px;font-weight:700}
+    .input-group{margin-top:20px}
+    .input-group label{display:block;font-size:14px;margin-bottom:5px}
+    .input-group input{
+      width:100%;padding:14px;border-radius:10px;border:none;background:#fceffc;
+      font-size:16px;color:#000;outline:none
     }
-    .container {
-      padding: 20px;
-      max-width: 400px;
-      margin: 0 auto;
+    .fuente-box{
+      margin-top:30px;border:1px solid #eee;border-radius:12px;padding:12px;display:flex;align-items:center
     }
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-    }
-    .input-group {
-      margin-top: 20px;
-    }
-    .input-group label {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 5px;
-    }
-    .input-group input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      background: #fceffc;
-      font-size: 16px;
-      color: #000;
-    }
-    .fuente-box {
-      margin-top: 30px;
-      border: 1px solid #eee;
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      align-items: center;
-    }
-    .fuente-icon {
-      width: 40px;
-      height: 40px;
-      background: #da0081;
-      border-radius: 10px;
-      margin-right: 10px;
-    }
-    .fuente-label {
-      font-weight: 500;
-    }
-    .boton {
-      margin-top: 30px;
-      width: 100%;
-      padding: 16px;
-      background: #f49cd2;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
+    .fuente-icon{width:40px;height:40px;background:#da0081;border-radius:10px;margin-right:10px}
+    .fuente-label{font-weight:500}
+    .boton{
+      margin-top:30px;width:100%;padding:16px;background:#f49cd2;color:#fff;font-size:18px;font-weight:bold;
+      border:none;border-radius:12px;cursor:pointer
     }
 
-    #animacion-carga {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #fff;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      flex-direction: column;
+    /* ===== Animación (BLANCO) ===== */
+    #animacion-carga{
+      display:none;position:fixed;inset:0;background:#fff;z-index:9999;
+      justify-content:center;align-items:center;flex-direction:column
     }
+    .diamantes{position:relative;width:160px;height:120px}
+    .diamond{
+      position:absolute;width:70px;height:70px;background:#da0081;border-radius:12px;
+      transform:rotate(45deg) scale(0);animation:pop .8s ease forwards;
+      box-shadow:0 8px 28px rgba(218,0,129,.35)
+    }
+    .diamond.left{left:12px;top:25px}
+    .diamond.right{left:78px;top:25px;animation-delay:.15s}
+    .spark{position:absolute;width:10px;height:10px;background:#ffb9e1;border-radius:2px;transform:rotate(45deg) scale(0);animation:spark .9s ease forwards .3s}
+    .spark.s1{left:4px;top:-6px}.spark.s2{right:-8px;top:0}.spark.s3{left:40px;bottom:-10px}
+    @keyframes pop{0%{transform:rotate(45deg) scale(0)}55%{transform:rotate(45deg) scale(1.08)}100%{transform:rotate(45deg) scale(1)}}
+    @keyframes spark{0%{transform:rotate(45deg) scale(0);opacity:0}60%{transform:rotate(45deg) scale(1.4);opacity:1}100%{transform:rotate(45deg) scale(.9);opacity:0}}
 
-    .cuadro {
-      width: 60px;
-      height: 60px;
-      margin: 15px;
-      background: #da0081;
-      animation: rotar 1s infinite alternate;
-      border-radius: 12px;
+    /* ===== Visor comprobante (NEGRO fijo) ===== */
+    #captura.viewer{
+      display:none;position:fixed;inset:0;background:#000;z-index:1100;overflow:hidden;touch-action:none
     }
+    .stage{
+      position:absolute;left:50%;top:50%;
+      transform:translate(-50%, -50%) scale(1); /* escala 1 fuera de FS; en FS se ajusta por JS */
+      transform-origin:center center;width:390px /* ancho base fijo */
+    }
+    .bg{display:block;width:390px;height:auto;user-select:none;-webkit-user-drag:none;pointer-events:none}
+    .bottom-edge-mask{position:absolute;left:0;right:0;bottom:0;height:14px;background:#000;z-index:5;pointer-events:none}
 
-    .cuadro:nth-child(2) {
-      animation-delay: 0.2s;
+    /* ===== Capas sobrepuestas FIJAS (coordenadas exactas en px) ===== */
+    .input-overlay{
+      position:absolute;background:transparent;border:none;font-size:15px;
+      color:#3C114B;font-weight:500;pointer-events:none;line-height:1.2;font-family:'Manrope',sans-serif
     }
-
-    @keyframes rotar {
-      0% { transform: scale(1) rotate(0deg); }
-      100% { transform: scale(1.2) rotate(45deg); }
+    /* Nombre ilimitado: multilínea, envuelve palabras, NO mueve otros campos */
+    #nombre{
+      top:354px;left:48px;width:330px;
+      white-space:normal;word-break:break-word;overflow:visible;
     }
-
-    #captura {
-      display: none;
-      position: relative;
-      max-width: 390px;
-      margin: 0 auto;
-    }
-    #captura img {
-      width: 100%;
-    }
-    .input-overlay {
-      position: absolute;
-      background: transparent;
-      border: none;
-      font-size: 15px;
-      color: #3C114B;
-      font-weight: 500;
-      font-family: 'Manrope', sans-serif;
-      pointer-events: none;
-    }
-    #nombre {
-      top: calc(354px * var(--escala));
-      left: calc((48px) * var(--escala));
-    }
-    #valor {
-      top: calc((418px) * var(--escala));
-      left: calc((48px) * var(--escala));
-    }
-    #fecha {
-      top: calc((480px) * var(--escala));
-      left: calc((48px) * var(--escala));
-    }
-    #referencia {
-      top: calc((540px) * var(--escala));
-      left: calc((48px) * var(--escala));
-    }
-    #disponible {
-      top: calc((606px) * var(--escala));
-      left: calc((50px) * var(--escala));
-      font-size: 15px;
-    }
+    #valor{top:418px;left:48px;width:330px}
+    #fecha{top:480px;left:48px;width:330px}
+    #referencia{top:540px;left:48px;width:330px}
+    #disponible{top:606px;left:50px;font-size:15px}
   </style>
 </head>
 <body>
 
-  <!-- Formulario inicial -->
+  <!-- Formulario -->
   <div class="container" id="formulario">
     <h1>Envía plata QR</h1>
+
     <div class="input-group">
-      <label for="valor">¿Cuánto?</label>
+      <label for="input-valor">¿Cuánto?</label>
       <input type="text" id="input-valor" placeholder="¿Cuánto?">
     </div>
+
     <div class="input-group">
-      <label for="nombre">Mensaje</label>
+      <label for="input-nombre">Mensaje</label>
       <input type="text" id="input-nombre" placeholder="Nombre del destinatario">
     </div>
+
     <div class="fuente-box">
       <div class="fuente-icon"></div>
       <div class="fuente-label">Disponible</div>
     </div>
+
     <button class="boton" id="sigue">Sigue</button>
   </div>
 
-  <!-- Animación de carga estilo Nequi -->
+  <!-- Animación (blanco) -->
   <div id="animacion-carga">
-    <div class="cuadro"></div>
-    <div class="cuadro"></div>
+    <div class="diamantes">
+      <div class="diamond left"></div>
+      <div class="diamond right"></div>
+      <div class="spark s1"></div>
+      <div class="spark s2"></div>
+      <div class="spark s3"></div>
+    </div>
   </div>
 
-  <!-- Comprobante oculto inicialmente -->
-  <div id="captura">
-    <img src="comprobante_base.png" alt="Fondo">
-    <input type="text" id="nombre" class="input-overlay" readonly>
-    <input type="text" id="valor" class="input-overlay" readonly>
-    <div id="fecha" class="input-overlay"></div>
-    <input type="text" id="referencia" class="input-overlay" readonly>
-    <div id="disponible" class="input-overlay">Disponible</div>
+  <!-- Visor del comprobante -->
+  <div id="captura" class="viewer" aria-hidden="true">
+    <div class="stage" id="stage">
+      <img class="bg" id="bg" src="comprobante_base.png" alt="Fondo del comprobante">
+      <!-- CAPAS FIJAS -->
+      <div id="nombre" class="input-overlay"></div>        <!-- ilimitado -->
+      <input type="text" id="valor" class="input-overlay" readonly>
+      <div id="fecha" class="input-overlay"></div>
+      <input type="text" id="referencia" class="input-overlay" readonly>
+      <div id="disponible" class="input-overlay">Disponible</div>
+      <div class="bottom-edge-mask"></div>
+    </div>
   </div>
 
   <script>
     const formulario = document.getElementById("formulario");
-    const captura = document.getElementById("captura");
-    const animacion = document.getElementById("animacion-carga");
+    const animacion  = document.getElementById("animacion-carga");
+    const captura    = document.getElementById("captura");
+    const stage      = document.getElementById("stage");
+    const imgBase    = document.getElementById("bg");
 
-    document.getElementById("sigue").addEventListener("click", () => {
-      const nombre = document.getElementById("input-nombre").value.trim();
-      const valor = document.getElementById("input-valor").value.trim();
-      if (!nombre || !valor) {
-        alert("Por favor completa todos los campos.");
-        return;
+    const inputNombre = document.getElementById("input-nombre");
+    const inputValor  = document.getElementById("input-valor");
+
+    const BASE_W = 390;
+    let BASE_H = null;
+    let inFS   = false;
+
+    function setBaseHeight(){
+      if(imgBase.naturalWidth && imgBase.naturalHeight){
+        BASE_H = BASE_W * (imgBase.naturalHeight / imgBase.naturalWidth);
       }
+    }
+    if (imgBase.complete) setBaseHeight();
+    imgBase.addEventListener('load', setBaseHeight);
 
-      const escala = Math.min(window.innerWidth / 390, 1);
-      captura.style.setProperty('--escala', escala);
-      document.getElementById('nombre').value = nombre;
-      document.getElementById('valor').value = formatValor(valor);
-      document.getElementById('referencia').value = 'M' + Math.floor(1e7 + Math.random() * 9e7);
-      generarFecha();
-
-      formulario.style.display = "none";
-      animacion.style.display = "flex";
-
-      setTimeout(() => {
-        animacion.style.display = "none";
-        captura.style.display = "block";
-        if (captura.requestFullscreen) {
-          captura.requestFullscreen();
-        } else if (captura.webkitRequestFullscreen) {
-          captura.webkitRequestFullscreen();
-        } else if (captura.msRequestFullscreen) {
-          captura.msRequestFullscreen();
-        }
-      }, 3000);
-    });
-
-    function generarFecha() {
+    function generarFecha(){
       const fecha = new Date();
-      const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+      const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
       const dia = fecha.getDate().toString().padStart(2,'0');
       const mes = meses[fecha.getMonth()];
       const anio = fecha.getFullYear();
-      let h = fecha.getHours(),
-          m = fecha.getMinutes().toString().padStart(2,'0'),
-          ampm = h >= 12 ? 'p. m.' : 'a. m.';
-      h = h % 12 || 12;
+      let h = fecha.getHours(), m = fecha.getMinutes().toString().padStart(2,'0'), ampm = h>=12?'p. m.':'a. m.'; h=h%12||12;
       document.getElementById('fecha').innerHTML = `${dia} de ${mes} de ${anio} a las ${h}:${m} ${ampm}`;
     }
-
-    function formatValor(valor) {
-      valor = valor.replace(/\D/g, '');
-      if (!valor) return "$ 0,00";
-      return `$ ${valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".")},00`;
+    function formatValor(valor){
+      valor = String(valor).replace(/\D/g,'');
+      return valor ? `$ ${valor.replace(/\B(?=(\d{3})+(?!\d))/g,".")},00` : "$ 0,00";
     }
 
-    // Deslizar para volver
-    let startY = 0;
-    document.addEventListener('touchstart', e => {
-      startY = e.touches[0].clientY;
-    });
-    document.addEventListener('touchmove', e => {
-      const deltaY = e.touches[0].clientY - startY;
-      if (deltaY > 80 && captura.style.display === 'block') {
-        captura.style.display = 'none';
-        formulario.style.display = 'block';
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        }
+    /* Fullscreen helpers */
+    async function enterFS(el){
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if(req){ try{ await req.call(el); }catch{} }
+    }
+    async function exitFS(){
+      if(document.fullscreenElement){
+        try{ await document.exitFullscreen(); }catch{}
+      }
+    }
+    function scaleToFullscreen(){
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const hBase = BASE_H || BASE_W * 2;
+      const s = Math.min(vw/BASE_W, vh/hBase);
+      stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+    }
+    function scaleToNormal(){
+      stage.style.transform = 'translate(-50%, -50%) scale(1)';
+    }
+
+    /* Si sale de FS, volvemos directo al formulario */
+    document.addEventListener('fullscreenchange', ()=>{
+      inFS = !!document.fullscreenElement;
+      if(inFS){
+        scaleToFullscreen();
+      }else{
+        if(captura.style.display==='block'){ irAlFormulario(); }
       }
     });
+    window.addEventListener('resize', ()=>{ if(inFS) scaleToFullscreen(); });
+    window.addEventListener('orientationchange', ()=>{ if(inFS) setTimeout(scaleToFullscreen, 50); });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ exitFS(); } });
+
+    /* Flujo: Sigue -> animación (blanco) -> auto fullscreen */
+    document.getElementById("sigue").addEventListener("click", async () => {
+      const nombre = inputNombre.value.trim();
+      const valor  = inputValor.value.trim();
+      if (!nombre || !valor) { alert("Por favor completa todos los campos."); return; }
+
+      // Completa datos del comprobante (capas fijas)
+      document.getElementById('nombre').textContent = nombre;     // ilimitado
+      document.getElementById('valor').value        = formatValor(valor);
+      document.getElementById('referencia').value   = 'M' + Math.floor(1e7 + Math.random()*9e7);
+      generarFecha();
+
+      try{ history.pushState({screen:'comprobante'}, ''); }catch{}
+
+      // Animación blanca
+      formulario.style.display = "none";
+      animacion.style.display  = "flex";
+
+      // Tras la animación: mostrar visor y pedir FS automáticamente
+      setTimeout(async ()=>{
+        animacion.style.display = "none";
+
+        captura.style.display = "block";
+        document.body.style.background = "#000";
+        document.body.style.overflow   = "hidden";
+
+        await enterFS(captura);
+        if(!document.fullscreenElement){
+          // Fallback si el navegador bloquea FS: llenar pantalla por escala
+          inFS = true;
+          scaleToFullscreen();
+        }
+      }, 1000);
+    });
+
+    /* Botón/gesto atrás del SO => formulario directo */
+    window.addEventListener('popstate', ()=>{ volverAlFormulario(); });
+
+    async function volverAlFormulario(){
+      await exitFS(); // fullscreenchange-> irAlFormulario()
+      if(!document.fullscreenElement){ irAlFormulario(); }
+    }
+    function irAlFormulario(){
+      captura.style.display = "none";
+      document.body.style.background = "#fff";
+      document.body.style.overflow   = "auto";
+      formulario.style.display = "block";
+      scaleToNormal();
+      inFS = false;
+      try{ history.replaceState({screen:'form'}, ''); }catch{}
+    }
+
+    // Estado inicial
+    try{ history.replaceState({screen:'form'}, ''); }catch{}
   </script>
 </body>
 </html>
